@@ -1,0 +1,31 @@
+- description: Selectors for selecting all security queries for a language
+- include:
+    kind:
+    - problem
+    - path-problem
+    tags contain:
+    - security
+- include:
+    kind:
+    - diagnostic
+- include:
+    kind:
+    - metric
+    tags contain:
+    - summary
+- exclude:
+    query path:
+      - /^experimental\/.*/
+- include:
+    tags contain all:
+      - security
+      - experimental
+- exclude:
+    deprecated: //
+- exclude:
+    query path:
+      - Metrics/Summaries/FrameworkCoverage.ql
+      - /Diagnostics/Internal/.*/
+- exclude:
+    tags contain:
+      - model-generator
