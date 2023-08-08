@@ -1,4 +1,4 @@
 - description: Extended and experimental security queries for Java and Kotlin
 - queries: .
 - apply: security-oxpecker.yml
-  from: ../suite-helpers
+  from: codeql/suite-helpers
