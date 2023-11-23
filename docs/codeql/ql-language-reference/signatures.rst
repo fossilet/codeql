@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. index:: signature
 
 .. _signatures:

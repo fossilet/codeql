@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _evaluation-of-ql-programs:
 
 Evaluation of QL programs

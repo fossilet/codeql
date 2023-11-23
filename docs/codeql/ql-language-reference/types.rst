@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. index:: type
 
 .. _types:
