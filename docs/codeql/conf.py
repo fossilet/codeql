@@ -89,8 +89,8 @@ html_theme_options = {'font_size': '16px',
                       'show_powered_by': False,
                       # 'nosidebar':True,
                       'head_font_family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
-                      "sidebar_width": "300px",
-                      'page_width': '1500px'
+                      "sidebar_width": "330px",
+                      'page_width': '1130px'
                       }
 
 # Path to the folder that contains the project's HTML template
