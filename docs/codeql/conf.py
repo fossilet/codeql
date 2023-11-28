@@ -87,15 +87,17 @@ html_theme_options = {'font_size': '16px',
                       'link': '#2F1695',
                       'link_hover': '#2F1695',
                       'show_powered_by': False,
-                      'nosidebar':True,
+                      # 'nosidebar':True,
                       'head_font_family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
+                      "sidebar_width": "300px",
+                      'page_width': '1500px'
                       }
 
 # Path to the folder that contains the project's HTML template
-templates_path = ['_templates']
+# templates_path = ['_templates']
 
 # Path to the folder that contains static stylesheets
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 # Copy the static landing page for codeql.github.com/docs when building this sphinx project
 html_extra_path = ['index.html']
