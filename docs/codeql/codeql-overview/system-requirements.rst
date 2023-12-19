@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _system-requirements:
 
 System requirements

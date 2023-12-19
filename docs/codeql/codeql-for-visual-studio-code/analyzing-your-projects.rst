@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _analyzing-your-projects:
 
 Analyzing your projects

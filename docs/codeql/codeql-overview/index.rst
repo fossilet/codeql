@@ -18,7 +18,7 @@ Learn more about how CodeQL works, the languages and libraries supported by Code
 - :doc:`CodeQL glossary <codeql-glossary>`: An overview of the technical terms and concepts in CodeQL.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
    :hidden:
 
    about-codeql

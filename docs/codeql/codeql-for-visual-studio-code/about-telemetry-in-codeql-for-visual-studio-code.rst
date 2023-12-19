@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _about-telemetry-in-codeql-for-visual-studio-code:
 
 About telemetry in CodeQL for Visual Studio Code

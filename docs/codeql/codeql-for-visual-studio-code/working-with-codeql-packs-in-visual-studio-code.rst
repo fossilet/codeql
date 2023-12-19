@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _working-with-codeql-packs-in-visual-studio-code:
 
 Working with CodeQL packs in Visual Studio Code

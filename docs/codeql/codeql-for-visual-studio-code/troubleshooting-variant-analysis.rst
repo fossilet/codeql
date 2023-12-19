@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _troubleshooting-variant-analysis:
 
 Troubleshooting variant analysis

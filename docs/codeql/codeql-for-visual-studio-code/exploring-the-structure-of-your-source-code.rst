@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _exploring-the-structure-of-your-source-code:
 
 Exploring the structure of your source code

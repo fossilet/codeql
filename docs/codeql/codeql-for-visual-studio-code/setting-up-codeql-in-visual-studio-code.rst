@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _setting-up-codeql-in-visual-studio-code:
 
 Setting up CodeQL in Visual Studio Code

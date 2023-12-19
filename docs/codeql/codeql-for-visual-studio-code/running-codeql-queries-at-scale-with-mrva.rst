@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _running-codeql-queries-at-scale-with-mrva:
 
 Running CodeQL queries at scale with multi-repository variant analysis

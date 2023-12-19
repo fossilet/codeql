@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _supported-languages-and-frameworks:
 
 Supported languages and frameworks

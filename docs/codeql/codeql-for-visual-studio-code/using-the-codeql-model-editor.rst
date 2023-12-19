@@ -1,5 +1,3 @@
-:tocdepth: 1
-
 .. _using-the-codeql-model-editor:
 
 Using the CodeQL model editor
