@@ -47,15 +47,13 @@
  *
  *    For sources, an `output` can be either "", "Argument[n]", "Argument[n1..n2]",
  *    "Parameter", "Parameter[n]", "Parameter[n1..n2]", or "ReturnValue":
- *    - "": Selects a read of a selected field, property, or parameter.
+ *    - "": Selects a read of a selected field or property.
  *    - "Argument[n]": Selects the post-update value of an argument in a call to the
  *      selected element. That is, the value of the argument after the call returns.
  *      The arguments are zero-indexed, and `this` specifies the qualifier.
  *    - "Argument[n1..n2]": Similar to "Argument[n]" but select any argument in
  *      the given range. The range is inclusive at both ends.
  *    - "Parameter": Selects the value of a parameter of the selected element.
- *      "Parameter" is also allowed in case the selected element is already a
- *      parameter itself.
  *    - "Parameter[n]": Similar to "Parameter" but restricted to a specific
  *      numbered parameter (zero-indexed, and `this` specifies the value of `this`).
  *    - "Parameter[n1..n2]": Similar to "Parameter[n]" but selects any parameter
@@ -395,14 +393,14 @@ Declaration interpretElement(
  * A callable where there exists a MaD sink model that applies to it.
  */
 class SinkCallable extends Callable {
-  SinkCallable() { SourceSinkInterpretationInput::sinkElement(this, _, _) }
+  SinkCallable() { SourceSinkInterpretationInput::sinkElement(this, _, _, _) }
 }
 
 /**
  * A callable where there exists a MaD source model that applies to it.
  */
 class SourceCallable extends Callable {
-  SourceCallable() { SourceSinkInterpretationInput::sourceElement(this, _, _) }
+  SourceCallable() { SourceSinkInterpretationInput::sourceElement(this, _, _, _) }
 }
 
 cached
@@ -529,6 +527,13 @@ private predicate interpretSummary(
   )
 }
 
+private predicate interpretNeutral(UnboundCallable c, string kind, string provenance) {
+  exists(string namespace, string type, string name, string signature |
+    neutralModel(namespace, type, name, signature, kind, provenance) and
+    c = interpretElement(namespace, type, false, name, signature, "")
+  )
+}
+
 // adapter class for converting Mad summaries to `SummarizedCallable`s
 private class SummarizedCallableAdapter extends SummarizedCallable {
   SummarizedCallableAdapter() { interpretSummary(this, _, _, _, _) }
@@ -544,6 +549,10 @@ private class SummarizedCallableAdapter extends SummarizedCallable {
     exists(Provenance provenance |
       interpretSummary(this, input, output, kind, provenance) and
       provenance.isGenerated()
+    ) and
+    not exists(Provenance provenance |
+      interpretNeutral(this, "summary", provenance) and
+      provenance.isManual()
     )
   }
 
@@ -568,12 +577,7 @@ private class NeutralCallableAdapter extends NeutralCallable {
   string kind;
   string provenance_;
 
-  NeutralCallableAdapter() {
-    exists(string namespace, string type, string name, string signature |
-      neutralModel(namespace, type, name, signature, kind, provenance_) and
-      this = interpretElement(namespace, type, false, name, signature, "")
-    )
-  }
+  NeutralCallableAdapter() { interpretNeutral(this, kind, provenance_) }
 
   override string getKind() { result = kind }
 

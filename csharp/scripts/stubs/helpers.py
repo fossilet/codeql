@@ -3,6 +3,7 @@ import os
 import subprocess
 import json
 import shutil
+import re
 
 def run_cmd(cmd, msg="Failed to run command"):
     print('Running ' + ' '.join(cmd))
@@ -109,7 +110,7 @@ class Generator:
         bqrsFile = os.path.join(rawOutputDir, outputName + '.bqrs')
         jsonFile = os.path.join(rawOutputDir, outputName + '.json')
 
-        sdk_version = '8.0.100'
+        sdk_version = '8.0.101'
         print("\n* Creating new global.json file and setting SDK to " + sdk_version)
         self.run_cmd(['dotnet', 'new', 'globaljson', '--force', '--sdk-version', sdk_version, '--output', self.workDir])
 
@@ -191,7 +192,8 @@ class Generator:
 
                     if 'dependencies' in data['targets'][target][package]:
                         for dependency in data['targets'][target][package]['dependencies'].keys():
-                            depVersion = data['targets'][target][package]['dependencies'][dependency]
+                            depString = data['targets'][target][package]['dependencies'][dependency]
+                            depVersion = re.search("(\d+\.\d+\.\d+(-[a-z]+)?)", depString).group(0)
                             pf.write('    <ProjectReference Include="../../' +
                                      dependency + '/' + depVersion + '/' + dependency + '.csproj" />\n')
 

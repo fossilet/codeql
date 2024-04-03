@@ -3,6 +3,7 @@
  */
 
 import semmle.files.FileSystem
+private import semmle.javascript.internal.Locations
 
 private class TXmlLocatable =
   @xmldtd or @xmlelement or @xmlattribute or @xmlnamespace or @xmlcomment or @xmlcharacters;
@@ -10,7 +11,7 @@ private class TXmlLocatable =
 /** An XML element that has a location. */
 class XmlLocatable extends @xmllocatable, TXmlLocatable {
   /** Gets the source location for this element. */
-  Location getLocation() { xmllocations(this, result) }
+  DbLocation getLocation() { result = getLocatableLocation(this) }
 
   /**
    * Holds if this element is at the specified location.
@@ -22,18 +23,12 @@ class XmlLocatable extends @xmllocatable, TXmlLocatable {
   predicate hasLocationInfo(
     string filepath, int startline, int startcolumn, int endline, int endcolumn
   ) {
-    exists(File f, Location l | l = this.getLocation() |
-      locations_default(l, f, startline, startcolumn, endline, endcolumn) and
-      filepath = f.getAbsolutePath()
-    )
+    this.getLocation().hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn)
   }
 
   /** Gets a textual representation of this element. */
   string toString() { none() } // overridden in subclasses
 }
-
-/** DEPRECATED: Alias for XmlLocatable */
-deprecated class XMLLocatable = XmlLocatable;
 
 /**
  * An `XmlParent` is either an `XmlElement` or an `XmlFile`,
@@ -95,9 +90,6 @@ class XmlParent extends @xmlparent {
   string toString() { result = this.getName() }
 }
 
-/** DEPRECATED: Alias for XmlParent */
-deprecated class XMLParent = XmlParent;
-
 /** An XML file. */
 class XmlFile extends XmlParent, File {
   XmlFile() { xmlEncoding(this, _) }
@@ -119,13 +111,7 @@ class XmlFile extends XmlParent, File {
 
   /** Gets a DTD associated with this XML file. */
   XmlDtd getADtd() { xmlDTDs(result, _, _, _, this) }
-
-  /** DEPRECATED: Alias for getADtd */
-  deprecated XmlDtd getADTD() { result = this.getADtd() }
 }
-
-/** DEPRECATED: Alias for XmlFile */
-deprecated class XMLFile = XmlFile;
 
 /**
  * An XML document type definition (DTD).
@@ -162,9 +148,6 @@ class XmlDtd extends XmlLocatable, @xmldtd {
     result = this.getRoot() + " SYSTEM '" + this.getSystemId() + "'"
   }
 }
-
-/** DEPRECATED: Alias for XmlDtd */
-deprecated class XMLDTD = XmlDtd;
 
 /**
  * An XML element in an XML file.
@@ -221,9 +204,6 @@ class XmlElement extends @xmlelement, XmlParent, XmlLocatable {
   override string toString() { result = this.getName() }
 }
 
-/** DEPRECATED: Alias for XmlElement */
-deprecated class XMLElement = XmlElement;
-
 /**
  * An attribute that occurs inside an XML element.
  *
@@ -254,9 +234,6 @@ class XmlAttribute extends @xmlattribute, XmlLocatable {
   override string toString() { result = this.getName() + "=" + this.getValue() }
 }
 
-/** DEPRECATED: Alias for XmlAttribute */
-deprecated class XMLAttribute = XmlAttribute;
-
 /**
  * A namespace used in an XML file.
  *
@@ -273,9 +250,6 @@ class XmlNamespace extends XmlLocatable, @xmlnamespace {
   /** Gets the URI of this namespace. */
   string getUri() { xmlNs(this, _, result, _) }
 
-  /** DEPRECATED: Alias for getUri */
-  deprecated string getURI() { result = this.getUri() }
-
   /** Holds if this namespace has no prefix. */
   predicate isDefault() { this.getPrefix() = "" }
 
@@ -285,9 +259,6 @@ class XmlNamespace extends XmlLocatable, @xmlnamespace {
     not this.isDefault() and result = this.getPrefix() + ":" + this.getUri()
   }
 }
-
-/** DEPRECATED: Alias for XmlNamespace */
-deprecated class XMLNamespace = XmlNamespace;
 
 /**
  * A comment in an XML file.
@@ -308,9 +279,6 @@ class XmlComment extends @xmlcomment, XmlLocatable {
   /** Gets a printable representation of this XML comment. */
   override string toString() { result = this.getText() }
 }
-
-/** DEPRECATED: Alias for XmlComment */
-deprecated class XMLComment = XmlComment;
 
 /**
  * A sequence of characters that occurs between opening and
@@ -335,6 +303,3 @@ class XmlCharacters extends @xmlcharacters, XmlLocatable {
   /** Gets a printable representation of this XML character sequence. */
   override string toString() { result = this.getCharacters() }
 }
-
-/** DEPRECATED: Alias for XmlCharacters */
-deprecated class XMLCharacters = XmlCharacters;
