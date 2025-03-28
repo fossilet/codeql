@@ -1,3 +1,106 @@
+## 1.1.10
+
+No user-facing changes.
+
+## 1.1.9
+
+No user-facing changes.
+
+## 1.1.8
+
+### Minor Analysis Improvements
+
+* Added [github.com/gorilla/mux.Vars](https://pkg.go.dev/github.com/gorilla/mux#Vars) to path sanitizers (disabled if [github.com/gorilla/mix.Router.SkipClean](https://pkg.go.dev/github.com/gorilla/mux#Router.SkipClean) has been called).
+
+## 1.1.7
+
+No user-facing changes.
+
+## 1.1.6
+
+No user-facing changes.
+
+## 1.1.5
+
+No user-facing changes.
+
+## 1.1.4
+
+### Minor Analysis Improvements
+
+* Added value flow models for functions in the `slices` package which do not involve the `iter` package.
+
+## 1.1.3
+
+No user-facing changes.
+
+## 1.1.2
+
+No user-facing changes.
+
+## 1.1.1
+
+No user-facing changes.
+
+## 1.1.0
+
+### Query Metadata Changes
+
+* The precision of the `go/incorrect-integer-conversion-query` query was decreased from `very-high` to `high`, since there is at least one known class of false positives involving dynamic bounds checking.
+
+## 1.0.8
+
+No user-facing changes.
+
+## 1.0.7
+
+No user-facing changes.
+
+## 1.0.6
+
+No user-facing changes.
+
+## 1.0.5
+
+No user-facing changes.
+
+## 1.0.4
+
+No user-facing changes.
+
+## 1.0.3
+
+No user-facing changes.
+
+## 1.0.2
+
+No user-facing changes.
+
+## 1.0.1
+
+No user-facing changes.
+
+## 1.0.0
+
+### Breaking Changes
+
+* CodeQL package management is now generally available, and all GitHub-produced CodeQL packages have had their version numbers increased to 1.0.0.
+
+### Minor Analysis Improvements
+
+* The query `go/incorrect-integer-conversion` has now been restricted to only use flow through value-preserving steps. This reduces false positives, especially around type switches.
+
+## 0.7.16
+
+No user-facing changes.
+
+## 0.7.15
+
+### Minor Analysis Improvements
+
+* The query `go/incomplete-hostname-regexp` now recognizes more sources involving concatenation of string literals and also follows flow through string concatenation. This may lead to more alerts.
+* Added some more barriers to flow for `go/incorrect-integer-conversion` to reduce false positives, especially around type switches.
+
 ## 0.7.14
 
 No user-facing changes.

@@ -72,8 +72,7 @@ class HostVerificationMethodCall extends MethodCall {
       exists(MethodCall ma, Method m, Field f |
         this.getArgument(0) = ma and
         ma.getMethod() = m and
-        m.hasName("getString") and
-        m.getDeclaringType().getQualifiedName() = "android.content.res.Resources" and
+        m.hasQualifiedName("android.content.res", "Resources", "getString") and
         ma.getArgument(0).(FieldRead).getField() = f and
         f.getDeclaringType() instanceof AndroidRString
       ) //Check resource properties in /res/values/strings.xml in Android mobile applications using res.getString(R.string.key)
@@ -89,6 +88,11 @@ class HostVerificationMethodCall extends MethodCall {
   }
 }
 
-from UriGetHostMethod um, MethodCall uma, HostVerificationMethodCall hma
-where hma.getQualifier() = uma and uma.getMethod() = um
-select hma, "Method has potentially $@.", hma.getArgument(0), "improper URL verification"
+deprecated query predicate problems(
+  HostVerificationMethodCall hma, string message1, Expr arg, string message2
+) {
+  exists(UriGetHostMethod um, MethodCall uma | hma.getQualifier() = uma and uma.getMethod() = um) and
+  message1 = "Method has potentially $@." and
+  arg = hma.getArgument(0) and
+  message2 = "improper URL verification"
+}

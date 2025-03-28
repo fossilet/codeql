@@ -25,16 +25,22 @@ class UnicodeCompatibilityNormalize extends API::CallNode {
   UnicodeCompatibilityNormalize() {
     (
       this = API::moduleImport("unicodedata").getMember("normalize").getACall() and
-      this.getParameter(0).getAValueReachingSink().asExpr().(StrConst).getText() in ["NFKC", "NFKD"]
+      this.getParameter(0).getAValueReachingSink().asExpr().(StringLiteral).getText() in [
+          "NFKC", "NFKD"
+        ]
       or
       this = API::moduleImport("pyunormalize").getMember("normalize").getACall() and
-      this.getParameter(0).getAValueReachingSink().asExpr().(StrConst).getText() in ["NFKC", "NFKD"]
+      this.getParameter(0).getAValueReachingSink().asExpr().(StringLiteral).getText() in [
+          "NFKC", "NFKD"
+        ]
     ) and
     argIdx = 1
     or
     (
       this = API::moduleImport("textnorm").getMember("normalize_unicode").getACall() and
-      this.getParameter(1).getAValueReachingSink().asExpr().(StrConst).getText() in ["NFKC", "NFKD"]
+      this.getParameter(1).getAValueReachingSink().asExpr().(StringLiteral).getText() in [
+          "NFKC", "NFKD"
+        ]
       or
       this = API::moduleImport("unidecode").getMember("unidecode").getACall()
       or
@@ -102,6 +108,8 @@ private module UnicodeDoSConfig implements DataFlow::ConfigSig {
           .getACall()
           .getArg(_)
   }
+
+  predicate observeDiffInformedIncrementalMode() { any() }
 }
 
 module UnicodeDoSFlow = TaintTracking::Global<UnicodeDoSConfig>;

@@ -29,10 +29,23 @@ namespace Semmle.Util
             return threads;
         }
 
+        public static bool GetBooleanOptOut(string name)
+        {
+            var env = Environment.GetEnvironmentVariable(name);
+            if (env == null ||
+                bool.TryParse(env, out var value) &&
+                value)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         public static bool GetBoolean(string name)
         {
             var env = Environment.GetEnvironmentVariable(name);
-            var _ = bool.TryParse(env, out var value);
+            _ = bool.TryParse(env, out var value);
             return value;
         }
 

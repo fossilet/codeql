@@ -599,7 +599,7 @@ module NodeJSLib {
     override DataFlow::Node getADataNode() {
       if methodName.matches("%Sync")
       then result = this
-      else
+      else (
         exists(int i, string paramName | fsDataParam(methodName, i, paramName) |
           if paramName = "callback"
           then
@@ -610,6 +610,12 @@ module NodeJSLib {
             )
           else result = this.getArgument(i)
         )
+        or
+        exists(AwaitExpr await |
+          this.getEnclosingExpr() = await.getOperand() and
+          result = DataFlow::valueNode(await)
+        )
+      )
     }
   }
 
@@ -1003,7 +1009,7 @@ module NodeJSLib {
       exists(ClientRequestLoginCallback callback | this = callback.getACall().getArgument(0))
     }
 
-    override string getCredentialsKind() { result = "Node.js http(s) client login username" }
+    override string getCredentialsKind() { result = "user name" }
   }
 
   /**
@@ -1014,7 +1020,7 @@ module NodeJSLib {
       exists(ClientRequestLoginCallback callback | this = callback.getACall().getArgument(1))
     }
 
-    override string getCredentialsKind() { result = "Node.js http(s) client login password" }
+    override string getCredentialsKind() { result = "password" }
   }
 
   /**
@@ -1243,5 +1249,14 @@ module NodeJSLib {
     DataFlow::SourceNode moduleMember(string member) {
       result = moduleImport().getAPropertyRead(member)
     }
+  }
+
+  /** A read of `process.env`, considered as a threat-model source. */
+  private class ProcessEnvThreatSource extends ThreatModelSource::Range {
+    ProcessEnvThreatSource() { this = NodeJSLib::process().getAPropertyRead("env") }
+
+    override string getThreatModel() { result = "environment" }
+
+    override string getSourceType() { result = "process.env" }
   }
 }

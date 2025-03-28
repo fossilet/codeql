@@ -33,6 +33,19 @@ private class RemoteFlowSourceFromMaD extends RemoteFlowSource {
 }
 
 /**
+ * A threat-model flow source originating from a data extension.
+ */
+private class ThreatModelSourceFromDataExtension extends ThreatModelSource::Range {
+  ThreatModelSourceFromDataExtension() { this = ModelOutput::getASourceNode(_).asSource() }
+
+  override string getThreatModel() { this = ModelOutput::getASourceNode(result).asSource() }
+
+  override string getSourceType() {
+    result = "Source node (" + this.getThreatModel() + ") [from data-extension]"
+  }
+}
+
+/**
  * Like `ModelOutput::summaryStep` but with API nodes mapped to data-flow nodes.
  */
 private predicate summaryStepNodes(DataFlow::Node pred, DataFlow::Node succ, string kind) {
@@ -108,7 +121,11 @@ module ModelExport<ModelExportSig S> {
     }
 
     predicate exposedName(API::Node node, string type, string path) {
-      node = API::moduleExport(type) and path = ""
+      exists(string moduleName |
+        node = API::moduleExport(moduleName) and
+        path = "" and
+        type = "(" + moduleName + ")"
+      )
     }
 
     predicate suggestedName(API::Node node, string type) {

@@ -42,11 +42,18 @@ abstract class SourceNode extends DataFlow::Node {
 }
 
 /**
+ * DEPRECATED: Use `ActiveThreatModelSource` instead.
+ *
  * A class of data flow sources that respects the
  * current threat model configuration.
  */
-class ThreatModelFlowSource extends DataFlow::Node {
-  ThreatModelFlowSource() {
+deprecated class ThreatModelFlowSource = ActiveThreatModelSource;
+
+/**
+ * A data flow source that is enabled in the current threat model configuration.
+ */
+class ActiveThreatModelSource extends DataFlow::Node {
+  ActiveThreatModelSource() {
     exists(string kind |
       // Specific threat model.
       currentThreatModel(kind) and
@@ -119,21 +126,6 @@ private predicate variableStep(Expr tracked, VarAccess sink) {
   )
 }
 
-private class ReverseDnsSource extends RemoteFlowSource {
-  ReverseDnsSource() {
-    // Try not to trigger on `localhost`.
-    exists(MethodCall m | m = this.asExpr() |
-      m.getMethod() instanceof ReverseDnsMethod and
-      not exists(MethodCall l |
-        (variableStep(l, m.getQualifier()) or l = m.getQualifier()) and
-        l.getMethod().getName() = "getLocalHost"
-      )
-    )
-  }
-
-  override string getSourceType() { result = "reverse DNS lookup" }
-}
-
 private class MessageBodyReaderParameterSource extends RemoteFlowSource {
   MessageBodyReaderParameterSource() {
     exists(MessageBodyReaderRead m |
@@ -194,34 +186,18 @@ private class AndroidExternalStorageSource extends RemoteFlowSource {
 }
 
 /** Class for `tainted` user input. */
-abstract class UserInput extends DataFlow::Node { }
+abstract class UserInput extends SourceNode { }
 
 /**
  * Input that may be controlled by a remote user.
  */
-private class RemoteUserInput extends UserInput instanceof RemoteFlowSource { }
-
-/** A node with input that may be controlled by a local user. */
-abstract class LocalUserInput extends UserInput, SourceNode {
-  override string getThreatModel() { result = "local" }
+private class RemoteUserInput extends UserInput instanceof RemoteFlowSource {
+  override string getThreatModel() { result = RemoteFlowSource.super.getThreatModel() }
 }
 
-/**
- * DEPRECATED: Use the threat models feature.
- * That is, use `ThreatModelFlowSource` as the class of nodes for sources
- * and set up the threat model configuration to filter source nodes.
- * Alternatively, use `getThreatModel` to filter nodes to create the
- * class of nodes you need.
- *
- * A node with input from the local environment, such as files, standard in,
- * environment variables, and main method parameters.
- */
-deprecated class EnvInput extends DataFlow::Node {
-  EnvInput() {
-    this instanceof EnvironmentInput or
-    this instanceof CliInput or
-    this instanceof FileInput
-  }
+/** A node with input that may be controlled by a local user. */
+abstract class LocalUserInput extends UserInput {
+  override string getThreatModel() { result = "local" }
 }
 
 /**
@@ -247,12 +223,21 @@ private class CliInput extends LocalUserInput {
     exists(Field f | this.asExpr() = f.getAnAccess() |
       f.getAnAnnotation().getType().getQualifiedName() = "org.kohsuke.args4j.Argument"
     )
-    or
+  }
+
+  override string getThreatModel() { result = "commandargs" }
+}
+
+/**
+ * A node with input from stdin.
+ */
+private class StdinInput extends LocalUserInput {
+  StdinInput() {
     // Access to `System.in`.
     exists(Field f | this.asExpr() = f.getAnAccess() | f instanceof SystemIn)
   }
 
-  override string getThreatModel() { result = "commandargs" }
+  override string getThreatModel() { result = "stdin" }
 }
 
 /**
@@ -266,17 +251,6 @@ private class FileInput extends LocalUserInput {
 
   override string getThreatModel() { result = "file" }
 }
-
-/**
- * DEPRECATED: Use the threat models feature.
- * That is, use `ThreatModelFlowSource` as the class of nodes for sources
- * and set up the threat model configuration to filter source nodes.
- * Alternatively, use `getThreatModel` to filter nodes to create the
- * class of nodes you need.
- *
- * A node with input from a database.
- */
-deprecated class DatabaseInput = DbInput;
 
 /**
  * A node with input from a database.
@@ -299,7 +273,7 @@ class EnvReadMethod extends Method {
 
 /** The type `java.net.InetAddress`. */
 class TypeInetAddr extends RefType {
-  TypeInetAddr() { this.getQualifiedName() = "java.net.InetAddress" }
+  TypeInetAddr() { this.hasQualifiedName("java.net", "InetAddress") }
 }
 
 /** A reverse DNS method. */
@@ -384,4 +358,37 @@ class AndroidJavascriptInterfaceMethodParameter extends RemoteFlowSource {
   override string getSourceType() {
     result = "Parameter of method with JavascriptInterface annotation"
   }
+}
+
+/** A node with input that comes from a reverse DNS lookup. */
+abstract class ReverseDnsUserInput extends UserInput {
+  override string getThreatModel() { result = "reverse-dns" }
+}
+
+private class ReverseDnsSource extends ReverseDnsUserInput {
+  ReverseDnsSource() {
+    // Try not to trigger on `localhost`.
+    exists(MethodCall m | m = this.asExpr() |
+      m.getMethod() instanceof ReverseDnsMethod and
+      not exists(MethodCall l |
+        (variableStep(l, m.getQualifier()) or l = m.getQualifier()) and
+        (l.getMethod().getName() = "getLocalHost" or l.getMethod().getName() = "getLoopbackAddress")
+      )
+    )
+  }
+}
+
+/**
+ * A data flow source node for an API, which should be considered
+ * supported for a modeling perspective.
+ */
+abstract class ApiSourceNode extends DataFlow::Node { }
+
+private class AddSourceNodes extends ApiSourceNode instanceof SourceNode { }
+
+/**
+ * Add all source models as data sources.
+ */
+private class ApiSourceNodeExternal extends ApiSourceNode {
+  ApiSourceNodeExternal() { sourceNode(this, _) }
 }

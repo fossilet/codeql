@@ -1,7 +1,7 @@
 import python
 import semmle.python.dataflow.new.DataFlow
 import semmle.python.ApiGraphs
-import TestUtilities.InlineExpectationsTest
+import utils.test.InlineExpectationsTest
 import semmle.python.dataflow.new.internal.ImportResolution
 
 /** A string that appears on the right hand side of an assignment. */
@@ -9,7 +9,7 @@ private class SourceString extends DataFlow::Node {
   string contents;
 
   SourceString() {
-    this.asExpr().(StrConst).getText() = contents and
+    this.asExpr().(StringLiteral).getText() = contents and
     this.asExpr().getParent() instanceof Assign
     or
     this.asExpr().(ClassExpr).getInnerScope().getName() = "SOURCE" and

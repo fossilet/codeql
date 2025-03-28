@@ -71,40 +71,16 @@ class ExternalApiDataNode extends DataFlow::Node {
   predicate hasQualifiedName(string qualifier, string name) {
     this.getCallable().hasFullyQualifiedName(qualifier, name)
   }
-
-  /**
-   * DEPRECATED: Use hasQualifiedName/2 instead.
-   *
-   * Gets the description of the callable being called.
-   */
-  deprecated string getCallableDescription() {
-    exists(string qualifier, string name |
-      this.hasQualifiedName(qualifier, name) and result = getQualifiedName(qualifier, name)
-    )
-  }
 }
 
-/**
- * DEPRECATED: Use `RemoteSourceToExternalApi` instead.
- *
- * A configuration for tracking flow from `RemoteFlowSource`s to `ExternalApiDataNode`s.
- */
-deprecated class UntrustedDataToExternalApiConfig extends TaintTracking::Configuration {
-  UntrustedDataToExternalApiConfig() { this = "UntrustedDataToExternalAPIConfig" }
-
-  override predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
-
-  override predicate isSink(DataFlow::Node sink) { sink instanceof ExternalApiDataNode }
-}
-
-/** A configuration for tracking flow from `ThreatModelFlowSource`s to `ExternalApiDataNode`s. */
+/** A configuration for tracking flow from `ActiveThreatModelSource`s to `ExternalApiDataNode`s. */
 private module RemoteSourceToExternalApiConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+  predicate isSource(DataFlow::Node source) { source instanceof ActiveThreatModelSource }
 
   predicate isSink(DataFlow::Node sink) { sink instanceof ExternalApiDataNode }
 }
 
-/** A module for tracking flow from `ThreatModelFlowSource`s to `ExternalApiDataNode`s. */
+/** A module for tracking flow from `ActiveThreatModelSource`s to `ExternalApiDataNode`s. */
 module RemoteSourceToExternalApi = TaintTracking::Global<RemoteSourceToExternalApiConfig>;
 
 /** A node representing untrusted data being passed to an external API. */

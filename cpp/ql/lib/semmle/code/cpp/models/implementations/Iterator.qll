@@ -86,6 +86,41 @@ private class StdIterator extends Iterator, Class {
   override Type getValueType() { result = this.getTemplateArgument(1).(Type).getUnderlyingType() }
 }
 
+private class StdReverseIterator extends Iterator, Class {
+  StdReverseIterator() { this.hasQualifiedName(["std", "bsl"], "reverse_iterator") }
+
+  override Type getValueType() { result = this.getTemplateArgument(1).(Type).getUnderlyingType() }
+}
+
+private class StdIstreamBufIterator extends Iterator, Class {
+  StdIstreamBufIterator() { this.hasQualifiedName(["std", "bsl"], "istreambuf_iterator") }
+
+  override Type getValueType() { result = this.getTemplateArgument(1).(Type).getUnderlyingType() }
+}
+
+private class StdIstreambufIteratorConstructor extends Constructor, SideEffectFunction,
+  AliasFunction
+{
+  StdIstreambufIteratorConstructor() { this.getDeclaringType() instanceof StdIstreamBufIterator }
+
+  override predicate parameterNeverEscapes(int index) { index = -1 }
+
+  override predicate parameterEscapesOnlyViaReturn(int index) { none() }
+
+  override predicate hasOnlySpecificReadSideEffects() { any() }
+
+  override predicate hasOnlySpecificWriteSideEffects() { any() }
+
+  override predicate hasSpecificWriteSideEffect(ParameterIndex i, boolean buffer, boolean mustWrite) {
+    i = -1 and buffer = false and mustWrite = true
+  }
+
+  override predicate hasSpecificReadSideEffect(ParameterIndex i, boolean buffer) {
+    this.getParameter(i).getUnspecifiedType() instanceof ReferenceType and
+    buffer = false
+  }
+}
+
 /**
  * Gets the `FunctionInput` corresponding to an iterator parameter to
  * user-defined operator `op`, at `index`.
@@ -560,7 +595,7 @@ private class IteratorAssignmentMemberOperatorModel extends IteratorAssignmentMe
   TaintFunction, SideEffectFunction, AliasFunction
 {
   override predicate hasTaintFlow(FunctionInput input, FunctionOutput output) {
-    input.isParameterDeref(0) and
+    (input.isParameterDeref(0) or input.isParameter(0)) and
     output.isQualifierObject()
   }
 
@@ -579,17 +614,54 @@ private class IteratorAssignmentMemberOperatorModel extends IteratorAssignmentMe
   override predicate parameterEscapesOnlyViaReturn(int index) { index = -1 }
 }
 
+private string beginName() {
+  result = ["begin", "cbegin", "rbegin", "crbegin", "before_begin", "cbefore_begin"]
+}
+
+/**
+ * A `begin` member function, or a related function, that returns an iterator.
+ */
+class BeginFunction extends Function {
+  BeginFunction() {
+    this.getUnspecifiedType() instanceof Iterator and
+    (
+      this.hasName(beginName()) and
+      this instanceof MemberFunction
+      or
+      this.hasGlobalOrStdOrBslName(beginName()) and
+      not this instanceof MemberFunction and
+      this.getNumberOfParameters() = 1
+    )
+  }
+}
+
+private string endName() { result = ["end", "cend", "rend", "crend"] }
+
+/**
+ * An `end` member function, or a related function, that returns an iterator.
+ */
+class EndFunction extends Function {
+  EndFunction() {
+    this.getUnspecifiedType() instanceof Iterator and
+    (
+      this.hasName(endName()) and
+      this instanceof MemberFunction
+      or
+      this.hasGlobalOrStdOrBslName(endName()) and
+      this instanceof MemberFunction and
+      this.getNumberOfParameters() = 1
+    )
+  }
+}
+
 /**
  * A `begin` or `end` member function, or a related member function, that
  * returns an iterator.
  */
-class BeginOrEndFunction extends MemberFunction {
+class BeginOrEndFunction extends Function {
   BeginOrEndFunction() {
-    this.hasName([
-        "begin", "cbegin", "rbegin", "crbegin", "end", "cend", "rend", "crend", "before_begin",
-        "cbefore_begin"
-      ]) and
-    this.getType().getUnspecifiedType() instanceof Iterator
+    this instanceof BeginFunction or
+    this instanceof EndFunction
   }
 }
 

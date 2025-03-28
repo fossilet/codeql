@@ -61,10 +61,10 @@ class Expr extends ExprParent, @expr {
   Expr getAChildExpr() { exprs(result, _, _, this, _) }
 
   /** Gets the basic block in which this expression occurs, if any. */
-  BasicBlock getBasicBlock() { result.getANode() = this }
+  BasicBlock getBasicBlock() { result.getANode().asExpr() = this }
 
   /** Gets the `ControlFlowNode` corresponding to this expression. */
-  ControlFlowNode getControlFlowNode() { result = this }
+  ControlFlowNode getControlFlowNode() { result.asExpr() = this }
 
   /** This statement's Halstead ID (used to compute Halstead metrics). */
   string getHalsteadID() { result = this.toString() }
@@ -511,9 +511,6 @@ class AssignLeftShiftExpr extends AssignOp, @assignlshiftexpr {
   override string getAPrimaryQlClass() { result = "AssignLeftShiftExpr" }
 }
 
-/** DEPRECATED: Alias for AssignLeftShiftExpr. */
-deprecated class AssignLShiftExpr = AssignLeftShiftExpr;
-
 /** A compound assignment expression using the `>>=` operator. */
 class AssignRightShiftExpr extends AssignOp, @assignrshiftexpr {
   override string getOp() { result = ">>=" }
@@ -521,18 +518,12 @@ class AssignRightShiftExpr extends AssignOp, @assignrshiftexpr {
   override string getAPrimaryQlClass() { result = "AssignRightShiftExpr" }
 }
 
-/** DEPRECATED: Alias for AssignRightShiftExpr. */
-deprecated class AssignRShiftExpr = AssignRightShiftExpr;
-
 /** A compound assignment expression using the `>>>=` operator. */
 class AssignUnsignedRightShiftExpr extends AssignOp, @assignurshiftexpr {
   override string getOp() { result = ">>>=" }
 
   override string getAPrimaryQlClass() { result = "AssignUnsignedRightShiftExpr" }
 }
-
-/** DEPRECATED: Alias for AssignUnsignedRightShiftExpr. */
-deprecated class AssignURShiftExpr = AssignUnsignedRightShiftExpr;
 
 /** A common super-class to represent constant literals. */
 class Literal extends Expr, @literal {
@@ -793,9 +784,6 @@ class LeftShiftExpr extends BinaryExpr, @lshiftexpr {
   override string getAPrimaryQlClass() { result = "LeftShiftExpr" }
 }
 
-/** DEPRECATED: Alias for LeftShiftExpr. */
-deprecated class LShiftExpr = LeftShiftExpr;
-
 /** A binary expression using the `>>` operator. */
 class RightShiftExpr extends BinaryExpr, @rshiftexpr {
   override string getOp() { result = " >> " }
@@ -803,18 +791,12 @@ class RightShiftExpr extends BinaryExpr, @rshiftexpr {
   override string getAPrimaryQlClass() { result = "RightShiftExpr" }
 }
 
-/** DEPRECATED: Alias for RightShiftExpr. */
-deprecated class RShiftExpr = RightShiftExpr;
-
 /** A binary expression using the `>>>` operator. */
 class UnsignedRightShiftExpr extends BinaryExpr, @urshiftexpr {
   override string getOp() { result = " >>> " }
 
   override string getAPrimaryQlClass() { result = "UnsignedRightShiftExpr" }
 }
-
-/** DEPRECATED: Alias for UnsignedRightShiftExpr. */
-deprecated class URShiftExpr = UnsignedRightShiftExpr;
 
 /** A binary expression using the `&` operator. */
 class AndBitwiseExpr extends BinaryExpr, @andbitexpr {
@@ -1942,9 +1924,6 @@ class VarAccess extends Expr, @varaccess {
     exists(UnaryAssignExpr e | e.getExpr() = this)
   }
 
-  /** DEPRECATED: Alias for `isVarWrite`. */
-  deprecated predicate isLValue() { this.isVarWrite() }
-
   /**
    * Holds if this variable access is a read access.
    *
@@ -1953,9 +1932,6 @@ class VarAccess extends Expr, @varaccess {
    * or a unary assignment.
    */
   predicate isVarRead() { not exists(AssignExpr a | a.getDest() = this) }
-
-  /** DEPRECATED: Alias for `isVarRead`. */
-  deprecated predicate isRValue() { this.isVarRead() }
 
   /** Gets a printable representation of this expression. */
   override string toString() {
@@ -2020,13 +1996,7 @@ class VarWrite extends VarAccess {
    * are source expressions of the assignment.
    */
   Expr getASource() { exists(Assignment e | e.getDest() = this and e.getSource() = result) }
-
-  /** DEPRECATED: (Inaccurately-named) alias for `getASource` */
-  deprecated Expr getRhs() { result = this.getASource() }
 }
-
-/** DEPRECATED: Alias for `VarWrite`. */
-deprecated class LValue = VarWrite;
 
 /**
  * A read access to a variable.
@@ -2038,9 +2008,6 @@ deprecated class LValue = VarWrite;
 class VarRead extends VarAccess {
   VarRead() { this.isVarRead() }
 }
-
-/** DEPRECATED: Alias for `VarRead`. */
-deprecated class RValue = VarRead;
 
 /** A method call is an invocation of a method with a list of arguments. */
 class MethodCall extends Expr, Call, @methodaccess {
@@ -2100,9 +2067,6 @@ class MethodCall extends Expr, Call, @methodaccess {
    */
   predicate isOwnMethodCall() { Qualifier::ownMemberAccess(this) }
 
-  /** DEPRECATED: Alias for `isOwnMethodCall`. */
-  deprecated predicate isOwnMethodAccess() { this.isOwnMethodCall() }
-
   /**
    * Holds if this is a method call to an instance method of the enclosing
    * class `t`. That is, the qualifier is either an explicit or implicit
@@ -2110,14 +2074,8 @@ class MethodCall extends Expr, Call, @methodaccess {
    */
   predicate isEnclosingMethodCall(RefType t) { Qualifier::enclosingMemberAccess(this, t) }
 
-  /** DEPRECATED: Alias for `isEnclosingMethodCall`. */
-  deprecated predicate isEnclosingMethodAccess(RefType t) { this.isEnclosingMethodCall(t) }
-
   override string getAPrimaryQlClass() { result = "MethodCall" }
 }
-
-/** DEPRECATED: Alias for `MethodCall`. */
-deprecated class MethodAccess = MethodCall;
 
 /** A type access is a (possibly qualified) reference to a type. */
 class TypeAccess extends Expr, Annotatable, @typeaccess {
@@ -2293,24 +2251,15 @@ class VirtualMethodCall extends MethodCall {
   }
 }
 
-/** DEPRECATED: Alias for `VirtualMethodCall`. */
-deprecated class VirtualMethodAccess = VirtualMethodCall;
-
 /** A static method call. */
 class StaticMethodCall extends MethodCall {
   StaticMethodCall() { this.getMethod().isStatic() }
 }
 
-/** DEPRECATED: Alias for `StaticMethodCall`. */
-deprecated class StaticMethodAccess = StaticMethodCall;
-
 /** A call to a method in the superclass. */
 class SuperMethodCall extends MethodCall {
   SuperMethodCall() { this.getQualifier() instanceof SuperAccess }
 }
-
-/** DEPRECATED: Alias for `SuperMethodCall`. */
-deprecated class SuperMethodAccess = SuperMethodCall;
 
 /**
  * A constructor call, which occurs either as a constructor invocation inside a

@@ -34,6 +34,11 @@ class Location = JS::Location;
  *
  * Type names have form `package.type` or just `package` if referring to the package export
  * object. If `package` contains a `.` character it must be enclosed in single quotes, such as `'package'.type`.
+ *
+ * A type name of form `(package)` may also be used when refering to the package export object.
+ * We allow this syntax as an alternative to the above, so models generated based on `EndpointNaming` look more consistent.
+ * However, access paths are deliberately not parsed here, as we can not handle aliasing at this stage.
+ * The model generator must explicitly generate the step between `(package)` and `(package).foo`, for example.
  */
 bindingset[rawType]
 predicate parseTypeString(string rawType, string package, string qualifiedName) {
@@ -42,19 +47,24 @@ predicate parseTypeString(string rawType, string package, string qualifiedName) 
     package = rawType.regexpCapture(regexp, 1).regexpReplaceAll("^'|'$", "") and
     qualifiedName = rawType.regexpCapture(regexp, 2).regexpReplaceAll("^\\.", "")
   )
+  or
+  package = rawType.regexpCapture("[(]([^)]+)[)]", 1) and
+  qualifiedName = ""
 }
 
 /**
  * Holds if models describing `package` may be relevant for the analysis of this database.
  */
 predicate isPackageUsed(string package) {
-  exists(DataFlow::moduleImport(package))
-  or
-  exists(JS::PackageJson json | json.getPackageName() = package)
-  or
   package = "global"
   or
-  any(DataFlow::SourceNode sn).hasUnderlyingType(package, _)
+  package = any(JS::Import imp).getImportedPath().getValue()
+  or
+  any(JS::TypeName t).hasQualifiedName(package, _)
+  or
+  any(JS::TypeAnnotation t).hasQualifiedName(package, _)
+  or
+  exists(JS::PackageJson json | json.getPackageName() = package)
 }
 
 bindingset[type]
@@ -152,8 +162,8 @@ API::Node getExtraSuccessorFromNode(API::Node node, AccessPathTokenBase token) {
   token.getName() = "Awaited" and
   result = node.getPromised()
   or
-  token.getName() = "ArrayElement" and
-  result = node.getMember(DataFlow::PseudoProperties::arrayElement())
+  token.getName() = ["ArrayElement", "Element"] and
+  result = node.getArrayElement()
   or
   token.getName() = "Element" and
   result = node.getMember(DataFlow::PseudoProperties::arrayLikeElement())
@@ -161,11 +171,6 @@ API::Node getExtraSuccessorFromNode(API::Node node, AccessPathTokenBase token) {
   // Note: MapKey not currently supported
   token.getName() = "MapValue" and
   result = node.getMember(DataFlow::PseudoProperties::mapValueAll())
-  or
-  // Currently we need to include the "unknown member" for ArrayElement and Element since
-  // API graphs do not use store/load steps for arrays
-  token.getName() = ["ArrayElement", "Element"] and
-  result = node.getUnknownMember()
   or
   token.getName() = "Parameter" and
   token.getAnArgument() = "this" and
@@ -363,7 +368,7 @@ bindingset[pred]
 predicate apiGraphHasEdge(API::Node pred, string path, API::Node succ) {
   exists(string name | succ = pred.getMember(name) and path = "Member[" + name + "]")
   or
-  succ = pred.getUnknownMember() and path = "AnyMember"
+  succ = pred.getUnknownArrayElement() and path = "ArrayElement"
   or
   succ = pred.getInstance() and path = "Instance"
   or

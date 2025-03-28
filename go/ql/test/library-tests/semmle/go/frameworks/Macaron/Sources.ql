@@ -1,18 +1,19 @@
 import go
-import TestUtilities.InlineExpectationsTest
+import semmle.go.dataflow.ExternalFlow
+import ModelValidation
+import utils.test.InlineExpectationsTest
 
-module UntrustedFlowSourceTest implements TestSig {
-  string getARelevantTag() { result = "UntrustedFlowSource" }
+module RemoteFlowSourceTest implements TestSig {
+  string getARelevantTag() { result = "RemoteFlowSource" }
 
   predicate hasActualResult(Location location, string element, string tag, string value) {
-    exists(UntrustedFlowSource src |
-      src.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
-        location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
+    exists(RemoteFlowSource src |
+      src.getLocation() = location and
       element = src.toString() and
       value = "" and
-      tag = "UntrustedFlowSource"
+      tag = "RemoteFlowSource"
     )
   }
 }
 
-import MakeTest<UntrustedFlowSourceTest>
+import MakeTest<RemoteFlowSourceTest>
